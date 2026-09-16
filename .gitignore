@@ -1,0 +1,12 @@
+node_modules/
+target/
+src-tauri/target/
+dist/
+.next/
+.env
+.env*.local
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+exports/

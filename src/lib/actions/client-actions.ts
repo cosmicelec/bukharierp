@@ -1,0 +1,92 @@
+'use server';
+
+import prisma from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
+
+export async function getClients() {
+  return prisma.client.findMany({
+    where: { isActive: true },
+    orderBy: { name: 'asc' },
+  });
+}
+
+export async function getAllClients() {
+  return prisma.client.findMany({
+    include: {
+      tenderContracts: true,
+    },
+    orderBy: { name: 'asc' },
+  });
+}
+
+export async function getClientById(id: string) {
+  return prisma.client.findUnique({
+    where: { id },
+    include: {
+      tenderContracts: { include: { lockedRates: { include: { product: true } } } },
+      invoices: { take: 10, orderBy: { createdAt: 'desc' } },
+    },
+  });
+}
+
+export async function createClient(data: {
+  code: string;
+  name: string;
+  clientType: string;
+  ntnNumber?: string;
+  strnNumber?: string;
+  isWithholdingAgent?: boolean;
+  defaultWhtRate?: number;
+  address: string;
+  city?: string;
+  phone?: string;
+}) {
+  const client = await prisma.client.create({
+    data: {
+      code: data.code,
+      name: data.name,
+      clientType: data.clientType,
+      ntnNumber: data.ntnNumber || null,
+      strnNumber: data.strnNumber || null,
+      isWithholdingAgent: data.isWithholdingAgent ?? true,
+      defaultWhtRate: data.defaultWhtRate ?? 5.0,
+      address: data.address,
+      city: data.city ?? 'Quetta',
+      phone: data.phone || null,
+    },
+  });
+  revalidatePath('/admin');
+  revalidatePath('/billing');
+  return client;
+}
+
+export async function updateClient(
+  id: string,
+  data: {
+    name?: string;
+    clientType?: string;
+    ntnNumber?: string;
+    strnNumber?: string;
+    isWithholdingAgent?: boolean;
+    defaultWhtRate?: number;
+    address?: string;
+    city?: string;
+    phone?: string;
+    isActive?: boolean;
+  }
+) {
+  const client = await prisma.client.update({
+    where: { id },
+    data,
+  });
+  revalidatePath('/admin');
+  return client;
+}
+
+export async function deleteClient(id: string) {
+  await prisma.client.update({
+    where: { id },
+    data: { isActive: false },
+  });
+  revalidatePath('/admin');
+}

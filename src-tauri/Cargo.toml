@@ -1,0 +1,30 @@
+[package]
+name = "bukhari-stationery-erp"
+version = "0.1.0"
+description = "Offline-first Stationery Tender & Inventory Management System for Desktop"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+tauri = { version = "1.5", features = [ "shell-open", "dialog-all", "fs-all", "path-all" ] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# SQLCipher encrypted SQLite bindings
+rusqlite = { version = "0.31", features = ["bundled-sqlcipher"] }
+# Windows Credential Manager integration for secure key storage
+keyring = { version = "2.1", features = ["windows-native"] }
+# Secure random key generation
+rand = "0.8"
+hex = "0.4"
+# Excel manipulation for template injection
+umya-spreadsheet = "5.0"
+dirs = "5.0"
+# Lightweight HTTP client for WhatsApp alert webhooks
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+tokio = { version = "1.0", features = ["full"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
