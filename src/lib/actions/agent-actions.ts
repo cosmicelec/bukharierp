@@ -109,3 +109,25 @@ WHT Deduction: Rs ${calc.estimatedWhtDeduction}
 Realized Cash per Unit: Rs ${calc.finalRealizedNetCash}
 Total Guaranteed Profit: Rs ${calc.desiredProfitAmount} per unit.`;
 }
+export async function agentGetWarehouseSummary() {
+  const stocks = await prisma.inventoryStock.findMany({
+    include: { product: true }
+  });
+  if (stocks.length === 0) return 'The warehouse is currently empty.';
+  const totalItems = stocks.reduce((sum, s) => sum + s.quantityOnHand, 0);
+  const lowStock = stocks.filter(s => s.quantityOnHand <= s.product.minStockAlert);
+  let summary = `You have a total of ${totalItems} physical units currently stored in the warehouse across ${stocks.length} active SKUs. `;
+  if (lowStock.length > 0) {
+    summary += `WARNING: You have ${lowStock.length} items running dangerously low (including ${lowStock[0].product.name}).`;
+  } else {
+    summary += 'All stock levels are perfectly healthy.';
+  }
+  return summary;
+}
+
+export async function agentListProducts() {
+  const products = await prisma.product.findMany({ select: { name: true } });
+  if (products.length === 0) return 'There are no products registered in the database yet.';
+  const names = products.map(p => p.name).join(', ');
+  return `Here are the products we currently carry: ${names}.`;
+}
