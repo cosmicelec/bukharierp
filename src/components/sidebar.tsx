@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -22,12 +23,14 @@ import { useRouter } from 'next/navigation';
 const navItems = [
   {
     group: 'MAIN',
+    adminOnly: false,
     items: [
       { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     ],
   },
   {
     group: 'BIDDING ENGINE',
+    adminOnly: true,
     items: [
       { name: 'Tender Calculator', href: '/tender-calculator', icon: Calculator },
       { name: 'Active Contracts', href: '/contracts', icon: FileCheck },
@@ -35,12 +38,14 @@ const navItems = [
   },
   {
     group: 'INVENTORY',
+    adminOnly: false,
     items: [
       { name: 'Warehouse Map', href: '/inventory', icon: Warehouse },
     ],
   },
   {
     group: 'BILLING',
+    adminOnly: false,
     items: [
       { name: 'New Invoice', href: '/billing', icon: Receipt },
       { name: 'Invoice History', href: '/invoices', icon: FileText },
@@ -48,6 +53,7 @@ const navItems = [
   },
   {
     group: 'ADMINISTRATION',
+    adminOnly: true,
     items: [
       { name: 'Admin Panel', href: '/admin', icon: Settings },
     ],
@@ -57,13 +63,27 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const user = getCurrentUserSession() || { username: 'admin', role: 'Admin' };
+  
+  // Use state to prevent hydration mismatch between server and client
+  const [user, setUser] = useState({ username: 'admin', role: 'Admin' });
+
+  useEffect(() => {
+    const session = getCurrentUserSession();
+    if (session) {
+      setUser(session as any);
+    }
+  }, []);
 
   const handleLogout = () => {
     clearSession();
     router.push('/login');
     router.refresh();
   };
+
+  const filteredNavItems = navItems.filter(group => {
+    if (group.adminOnly && user.role !== 'Admin') return false;
+    return true;
+  });
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-gray-900 text-white flex flex-col">
@@ -78,7 +98,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        {navItems.map((group) => (
+        {filteredNavItems.map((group) => (
           <div key={group.group}>
             <p className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
               {group.group}

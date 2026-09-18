@@ -11,15 +11,15 @@ tauri-build = { version = "1.5", features = [] }
 tauri = { version = "1.5", features = [ "shell-open", "dialog-all", "fs-all", "path-all" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-# SQLCipher encrypted SQLite bindings
-rusqlite = { version = "0.31", features = ["bundled-sqlcipher"] }
+# SQLCipher encrypted SQLite bindings (disabled temporarily for dev to bypass OpenSSL)
+rusqlite = { version = "0.31", features = ["bundled"] }
 # Windows Credential Manager integration for secure key storage
-keyring = { version = "2.1", features = ["windows-native"] }
+keyring = "2.1"
 # Secure random key generation
 rand = "0.8"
 hex = "0.4"
 # Excel manipulation for template injection
-umya-spreadsheet = "5.0"
+umya-spreadsheet = "3.1"
 dirs = "5.0"
 # Lightweight HTTP client for WhatsApp alert webhooks
 reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }

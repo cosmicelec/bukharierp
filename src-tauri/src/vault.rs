@@ -1,6 +1,6 @@
 use keyring::Entry;
 use rand::RngCore;
-use rusqlite::{Connection, Result as SqliteResult};
+use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 

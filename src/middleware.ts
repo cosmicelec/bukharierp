@@ -28,6 +28,20 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(dashboardUrl);
   }
 
+  // Role-Based Access Control (RBAC)
+  if (authSession) {
+    const userRole = request.cookies.get('bukhari_user_role')?.value;
+    const adminOnlyPaths = ['/admin', '/contracts', '/tender-calculator'];
+    
+    const isTryingToAccessAdminRoute = adminOnlyPaths.some(p => pathname.startsWith(p));
+    
+    if (isTryingToAccessAdminRoute && userRole !== 'Admin') {
+      // Redirect staff back to dashboard if they try to access admin pages
+      const dashboardUrl = new URL('/', request.url);
+      return NextResponse.redirect(dashboardUrl);
+    }
+  }
+
   return NextResponse.next();
 }
 

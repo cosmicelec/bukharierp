@@ -1,13 +1,16 @@
 import { getInventoryStock, getLowStockItems } from '@/lib/actions/inventory-actions';
 import { getLocations } from '@/lib/actions/inventory-actions';
+import { getAllProducts } from '@/lib/actions/product-actions';
 import { formatNumber } from '@/lib/utils';
 import { Warehouse, AlertTriangle, MapPin, Package } from 'lucide-react';
+import { AddStockButton } from './add-stock-button';
 
 export default async function InventoryPage() {
-  const [stocks, locations, lowStockItems] = await Promise.all([
+  const [stocks, locations, lowStockItems, products] = await Promise.all([
     getInventoryStock(),
     getLocations(),
     getLowStockItems(),
+    getAllProducts(),
   ]);
 
   // Group stocks by floor -> section -> rack
@@ -22,11 +25,14 @@ export default async function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Spatial Inventory & Warehouse Map</h1>
-        <p className="text-gray-500 mt-1">
-          Real-time stock levels organized by physical warehouse location
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Spatial Inventory & Warehouse Map</h1>
+          <p className="text-gray-500 mt-1">
+            Real-time stock levels organized by physical warehouse location
+          </p>
+        </div>
+        <AddStockButton products={products} locations={locations} />
       </div>
 
       {/* Low Stock Alerts */}

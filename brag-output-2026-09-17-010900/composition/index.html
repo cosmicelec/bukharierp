@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #f9fafb;
+        font-family: Inter, system-ui, sans-serif;
+      }
+      #root {
+        width: 100%; height: 100%;
+        position: relative;
+      }
+      
+      .clip { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+      /* Scene 1 */
+      #scene1 { background: #2563eb; color: #ffffff; }
+      #scene1-text { font-size: 80px; font-weight: 700; text-align: center; line-height: 1.1; letter-spacing: -0.02em; }
+      
+      /* Scene 2 */
+      #scene2 { background: #f9fafb; color: #111827; flex-direction: column; }
+      #scene2-text { font-size: 72px; font-weight: 700; margin-bottom: 60px; z-index: 10; }
+      .dashboard-cards { display: flex; gap: 30px; }
+      .dash-card { background: white; border: 1px solid #e5e7eb; border-radius: 20px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); width: 350px; text-align: left; }
+      .dash-card h3 { color: #6b7280; font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+      .dash-card p { font-size: 48px; font-weight: 700; color: #111827; }
+
+      /* Scene 3 */
+      #scene3 { background: white; flex-direction: column; }
+      .calc-container { display: flex; gap: 60px; padding: 60px; background: white; border-radius: 30px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; }
+      .calc-left { display: flex; flex-direction: column; gap: 30px; }
+      .calc-input { background: #f3f4f6; padding: 20px 40px; border-radius: 10px; font-size: 32px; font-weight: 600; color: #4b5563; }
+      .calc-right { background: #f8fafc; padding: 40px; border-radius: 20px; border: 2px solid #e2e8f0; width: 450px; }
+      .calc-right h4 { font-size: 24px; color: #64748b; margin-bottom: 30px; }
+      .calc-row { display: flex; justify-content: space-between; font-size: 32px; font-weight: 600; margin-bottom: 20px; }
+      .calc-profit { display: flex; justify-content: space-between; font-size: 48px; font-weight: 700; color: #16a34a; margin-top: 40px; padding-top: 40px; border-top: 2px dashed #cbd5e1; }
+      
+      #scene3-label { position: absolute; top: 100px; font-size: 64px; font-weight: 700; color: #111827; }
+
+      /* Scene 4 */
+      #scene4 { background: #fef2f2; flex-direction: column; }
+      #scene4-text { font-size: 64px; font-weight: 700; color: #111827; margin-bottom: 80px; }
+      .alert-box { background: #fee2e2; border: 4px solid #ef4444; border-radius: 20px; padding: 60px 80px; color: #b91c1c; font-size: 48px; font-weight: 800; display: flex; align-items: center; gap: 30px; box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25); }
+
+      /* Scene 5 */
+      #scene5 { background: #f0fdf4; flex-direction: column; }
+      #scene5-text { font-size: 72px; font-weight: 700; color: #111827; margin-bottom: 80px; }
+      .fbr-btn { background: #16a34a; color: white; padding: 40px 80px; border-radius: 100px; font-size: 48px; font-weight: 700; display: flex; align-items: center; gap: 30px; box-shadow: 0 20px 25px -5px rgba(22, 163, 74, 0.3); }
+      .success-badge { position: absolute; background: white; border: 4px solid #16a34a; color: #16a34a; padding: 20px 40px; border-radius: 20px; font-size: 36px; font-weight: 800; transform: rotate(-10deg); top: 50%; left: 50%; margin-top: -100px; margin-left: 150px; opacity: 0; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+
+      /* Scene 6 */
+      #scene6 { background: #111827; color: white; flex-direction: column; }
+      #scene6-title { font-size: 96px; font-weight: 800; color: #2563eb; margin-bottom: 20px; }
+      #scene6-subtitle { font-size: 56px; font-weight: 600; color: #9ca3af; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="brag" data-start="0" data-duration="22" data-width="1920" data-height="1080">
+      
+      <!-- Audio -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-11-by-ende-dot-app.mp3" data-start="0" data-duration="22" data-track-index="10"></audio>
+
+      <!-- Scene 1: The Hook -->
+      <div id="scene1" class="clip" data-start="0" data-duration="3" data-track-index="0">
+        <div id="scene1-text">Running a stationery empire?</div>
+      </div>
+
+      <!-- Scene 2: The Core App -->
+      <div id="scene2" class="clip" data-start="3" data-duration="3" data-track-index="1">
+        <div id="scene2-text">Stop guessing your margins.</div>
+        <div class="dashboard-cards">
+          <div class="dash-card card1">
+            <h3>Total Revenue</h3>
+            <p>Rs 4,250,000</p>
+          </div>
+          <div class="dash-card card2">
+            <h3>Active Contracts</h3>
+            <p>12</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 3: The Tender Calculator -->
+      <div id="scene3" class="clip" data-start="6" data-duration="6" data-track-index="2">
+        <div id="scene3-label">Live Tender Calculations.</div>
+        <div class="calc-container">
+          <div class="calc-left">
+            <div class="calc-input input1">Base Cost: Rs 15,000</div>
+            <div class="calc-input input2">Target Margin: 30%</div>
+          </div>
+          <div class="calc-right">
+            <h4>Financial Breakdown</h4>
+            <div class="calc-row"><span>Gross Rate</span><span>Rs 23,214</span></div>
+            <div class="calc-row" style="color: #ef4444"><span>GST (18%)</span><span>- Rs 3,541</span></div>
+            <div class="calc-row" style="color: #ef4444"><span>WHT (4.5%)</span><span>- Rs 885</span></div>
+            <div class="calc-profit profit-row"><span>Net Profit</span><span>+ Rs 3,788</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 4: The PPRA Alert -->
+      <div id="scene4" class="clip" data-start="12" data-duration="4" data-track-index="3">
+        <div id="scene4-text">Never accidentally lose money again.</div>
+        <div class="alert-box">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          PPRA VIOLATION & LOSS-MAKING BID ALERT!
+        </div>
+      </div>
+
+      <!-- Scene 5: FBR Sync -->
+      <div id="scene5" class="clip" data-start="16" data-duration="4" data-track-index="4">
+        <div id="scene5-text">FBR integration. Out of the box.</div>
+        <div style="position: relative;">
+          <div class="fbr-btn">
+            Generate Invoice & Push to FBR
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>
+          </div>
+          <div class="success-badge">SYNCED</div>
+        </div>
+      </div>
+
+      <!-- Scene 6: Outro -->
+      <div id="scene6" class="clip" data-start="20" data-duration="2" data-track-index="5">
+        <div id="scene6-title">Bukhari ERP</div>
+        <div id="scene6-subtitle">Ready to bid.</div>
+      </div>
+
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1
+      tl.fromTo("#scene1-text", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.5)" }, 0.2);
+
+      // Scene 2
+      tl.fromTo("#scene2-text", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5 }, 3.2);
+      tl.fromTo(".card1", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 3.5);
+      tl.fromTo(".card2", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 3.7);
+
+      // Scene 3
+      tl.fromTo("#scene3-label", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5 }, 6.2);
+      tl.fromTo(".calc-container", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.5 }, 6.5);
+      tl.fromTo(".input1", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3 }, 7.0);
+      tl.fromTo(".input2", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3 }, 7.5);
+      tl.fromTo(".calc-right", { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: 0.5 }, 8.0);
+      tl.fromTo(".profit-row", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, 9.0);
+
+      // Scene 4
+      tl.fromTo("#scene4-text", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 12.2);
+      tl.fromTo(".alert-box", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.5, ease: "elastic.out(1, 0.5)" }, 12.6);
+      
+      // Pulse effect on alert box
+      tl.to(".alert-box", { scale: 1.05, duration: 0.1, yoyo: true, repeat: 3 }, 13.5);
+
+      // Scene 5
+      tl.fromTo("#scene5-text", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, 16.2);
+      tl.fromTo(".fbr-btn", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.2)" }, 16.6);
+      tl.to(".fbr-btn", { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 }, 17.5); // Button click
+      tl.fromTo(".success-badge", { opacity: 0, scale: 0.5, rotation: -20 }, { opacity: 1, scale: 1, rotation: -10, duration: 0.4, ease: "back.out(2)" }, 17.7);
+
+      // Scene 6
+      tl.fromTo("#scene6-title", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 20.2);
+      tl.fromTo("#scene6-subtitle", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 20.6);
+      
+      // Fade out music
+      tl.to("#music", { volume: 0, duration: 1.5 }, 20.5);
+
+      window.__timelines["brag"] = tl;
+    </script>
+  </body>
+</html>

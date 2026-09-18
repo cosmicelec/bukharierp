@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/sidebar';
-import { JarvisMic } from '@/components/jarvis-mic';
+import { BukhariAgentSidebar } from '@/components/bukhari-agent-sidebar';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,8 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="ml-64 min-h-screen">
         <div className="p-6 lg:p-8">{children}</div>
       </main>
-      {/* Zero-cost Jarvis Voice Automation Layer */}
-      <JarvisMic />
+      <BukhariAgentSidebar />
     </>
   );
 }

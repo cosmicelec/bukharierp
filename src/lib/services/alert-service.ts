@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { invoke } from '@tauri-apps/api/tauri';
 
 export interface LowStockAlertData {
   productId: string;
@@ -31,10 +32,9 @@ export async function checkAndDispatchWhatsAppAlert(data: LowStockAlertData): Pr
       `_Tender allocation commitment alert._`;
 
     // 1. If running inside Tauri desktop, try invoking native Rust command
-    if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+    if (typeof window !== 'undefined' && (window as any).__TAURI_IPC__) {
       try {
-        const { invoke } = (window as any).__TAURI__.tauri;
-        const result = await invoke('send_whatsapp_low_stock_alert', {
+        const result: any = await invoke('send_whatsapp_low_stock_alert', {
           alert: {
             recipient_phone: adminPhone,
             product_name: data.productName,

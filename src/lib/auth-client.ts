@@ -1,5 +1,7 @@
 'use client';
 
+import { invoke } from '@tauri-apps/api/tauri';
+
 export interface UserSession {
   userId: string;
   username: string;
@@ -21,9 +23,8 @@ export async function authenticateUser(
 ): Promise<{ success: boolean; session?: UserSession; message: string }> {
   try {
     // 1. If running inside Tauri desktop wrapper
-    if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-      const { invoke } = (window as any).__TAURI__.tauri;
-      const res = await invoke('authenticate_user', { username, password, role });
+    if (typeof window !== 'undefined' && (window as any).__TAURI_IPC__) {
+      const res: any = await invoke('authenticate_user', { username, password, role });
       const session: UserSession = {
         userId: res.user_id,
         username: res.username,

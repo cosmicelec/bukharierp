@@ -59,42 +59,45 @@ pub fn generate_excel_invoice(
         create_default_template_book(&invoice)?
     };
 
-    let sheet = book.get_sheet_by_name_mut("Sheet1")
-        .or_else(|| book.get_sheet_mut(&0))
-        .ok_or_else(|| "Could not find worksheet in Excel workbook".to_string())?;
+    let sheet_exists = book.get_sheet_by_name("Sheet1").is_ok();
+    let sheet = if sheet_exists {
+        book.get_sheet_by_name_mut("Sheet1").unwrap()
+    } else {
+        book.get_sheet_mut(&0).map_err(|_| "Could not find worksheet in Excel workbook".to_string())?
+    };
 
     // Inject Header Information into exact coordinates
-    sheet.get_cell_mut("B5").set_value(&invoice.client_name);
-    sheet.get_cell_mut("B6").set_value(format!("NTN: {} | STRN: {}", invoice.client_ntn, invoice.client_strn));
-    sheet.get_cell_mut("B7").set_value(&invoice.client_address);
+    sheet.cell_mut("B5").set_value(&invoice.client_name);
+    sheet.cell_mut("B6").set_value(format!("NTN: {} | STRN: {}", invoice.client_ntn, invoice.client_strn));
+    sheet.cell_mut("B7").set_value(&invoice.client_address);
 
-    sheet.get_cell_mut("F5").set_value(format!("Invoice #: {}", invoice.invoice_number));
-    sheet.get_cell_mut("F6").set_value(format!("Date: {}", invoice.date));
+    sheet.cell_mut("F5").set_value(format!("Invoice #: {}", invoice.invoice_number));
+    sheet.cell_mut("F6").set_value(format!("Date: {}", invoice.date));
 
     // Inject Line Items starting at row 11
     let start_row = 11u32;
     for (idx, item) in invoice.items.iter().enumerate() {
         let row = start_row + (idx as u32);
-        sheet.get_cell_mut((1, row)).set_value((idx + 1).to_string());
-        sheet.get_cell_mut((2, row)).set_value(&item.description);
-        sheet.get_cell_mut((3, row)).set_value(&item.hs_code);
-        sheet.get_cell_mut((4, row)).set_value(&item.uom);
-        sheet.get_cell_mut((5, row)).set_value(item.quantity.to_string());
-        sheet.get_cell_mut((6, row)).set_value(format!("{:.2}", item.unit_price));
-        sheet.get_cell_mut((7, row)).set_value(format!("{:.2}", item.gst_amount));
-        sheet.get_cell_mut((8, row)).set_value(format!("{:.2}", item.total_amount));
+        sheet.cell_mut((1, row)).set_value((idx + 1).to_string());
+        sheet.cell_mut((2, row)).set_value(&item.description);
+        sheet.cell_mut((3, row)).set_value(&item.hs_code);
+        sheet.cell_mut((4, row)).set_value(&item.uom);
+        sheet.cell_mut((5, row)).set_value(item.quantity.to_string());
+        sheet.cell_mut((6, row)).set_value(format!("{:.2}", item.unit_price));
+        sheet.cell_mut((7, row)).set_value(format!("{:.2}", item.gst_amount));
+        sheet.cell_mut((8, row)).set_value(format!("{:.2}", item.total_amount));
     }
 
     // Totals
     let total_row = start_row + (invoice.items.len() as u32) + 1;
-    sheet.get_cell_mut((7, total_row)).set_value("Taxable Subtotal:");
-    sheet.get_cell_mut((8, total_row)).set_value(format!("PKR {:.2}", invoice.subtotal_taxable));
+    sheet.cell_mut((7, total_row)).set_value("Taxable Subtotal:");
+    sheet.cell_mut((8, total_row)).set_value(format!("PKR {:.2}", invoice.subtotal_taxable));
 
-    sheet.get_cell_mut((7, total_row + 1)).set_value("18% GST Total:");
-    sheet.get_cell_mut((8, total_row + 1)).set_value(format!("PKR {:.2}", invoice.total_gst));
+    sheet.cell_mut((7, total_row + 1)).set_value("18% GST Total:");
+    sheet.cell_mut((8, total_row + 1)).set_value(format!("PKR {:.2}", invoice.total_gst));
 
-    sheet.get_cell_mut((7, total_row + 2)).set_value("Grand Total Payable:");
-    sheet.get_cell_mut((8, total_row + 2)).set_value(format!("PKR {:.2}", invoice.grand_total));
+    sheet.cell_mut((7, total_row + 2)).set_value("Grand Total Payable:");
+    sheet.cell_mut((8, total_row + 2)).set_value(format!("PKR {:.2}", invoice.grand_total));
 
     // Save to Desktop
     writer::xlsx::write(&book, &output_path)
@@ -103,26 +106,26 @@ pub fn generate_excel_invoice(
     Ok(output_path.to_string_lossy().to_string())
 }
 
-fn create_default_template_book(invoice: &ExcelInvoiceData) -> Result<Spreadsheet, String> {
+fn create_default_template_book(invoice: &ExcelInvoiceData) -> Result<umya_spreadsheet::Workbook, String> {
     let mut book = new_file();
     let sheet = book.get_sheet_mut(&0)
-        .ok_or_else(|| "Default sheet creation failed".to_string())?;
+        .map_err(|_| "Default sheet creation failed".to_string())?;
 
     sheet.set_name("Invoice");
 
     // Title Block
-    sheet.get_cell_mut("A2").set_value("BUKHARI STATIONERY & TENDER SUPPLIERS");
-    sheet.get_cell_mut("A3").set_value("Govt / Corporate Tender Supplies & Wholesale | Quetta, Pakistan");
+    sheet.cell_mut("A2").set_value("BUKHARI STATIONERY & TENDER SUPPLIERS");
+    sheet.cell_mut("A3").set_value("Govt / Corporate Tender Supplies & Wholesale | Quetta, Pakistan");
 
     // Table Headers at Row 10
-    sheet.get_cell_mut("A10").set_value("Sr #");
-    sheet.get_cell_mut("B10").set_value("Description of Stationery Item");
-    sheet.get_cell_mut("C10").set_value("HS Code");
-    sheet.get_cell_mut("D10").set_value("UOM");
-    sheet.get_cell_mut("E10").set_value("Qty");
-    sheet.get_cell_mut("F10").set_value("Rate (Excl. Tax)");
-    sheet.get_cell_mut("G10").set_value("GST (18%)");
-    sheet.get_cell_mut("H10").set_value("Total (PKR)");
+    sheet.cell_mut("A10").set_value("Sr #");
+    sheet.cell_mut("B10").set_value("Description of Stationery Item");
+    sheet.cell_mut("C10").set_value("HS Code");
+    sheet.cell_mut("D10").set_value("UOM");
+    sheet.cell_mut("E10").set_value("Qty");
+    sheet.cell_mut("F10").set_value("Rate (Excl. Tax)");
+    sheet.cell_mut("G10").set_value("GST (18%)");
+    sheet.cell_mut("H10").set_value("Total (PKR)");
 
     Ok(book)
 }

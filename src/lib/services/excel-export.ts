@@ -1,3 +1,5 @@
+import { invoke } from '@tauri-apps/api/tauri';
+
 /**
  * Injects invoice data into an Excel spreadsheet.
  * Uses native Tauri Rust umya-spreadsheet command when running as desktop .exe,
@@ -26,9 +28,8 @@ export async function exportInvoiceToExcel(invoice: {
 }): Promise<{ success: boolean; filePath?: string; message: string }> {
   try {
     // 1. If running inside Tauri desktop app
-    if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-      const { invoke } = (window as any).__TAURI__.tauri;
-      const desktopPath = await invoke('generate_excel_invoice', {
+    if (typeof window !== 'undefined' && (window as any).__TAURI_IPC__) {
+      const desktopPath: any = await invoke('generate_excel_invoice', {
         invoice: {
           invoice_number: invoice.invoiceNumber,
           date: invoice.date,
