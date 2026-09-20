@@ -29,11 +29,10 @@ const navItems = [
     ],
   },
   {
-    group: 'BIDDING ENGINE',
-    adminOnly: true,
+    group: 'ACCOUNTS & ORDERS',
+    adminOnly: false,
     items: [
-      { name: 'Tender Calculator', href: '/tender-calculator', icon: Calculator },
-      { name: 'Active Contracts', href: '/contracts', icon: FileCheck },
+      { name: 'Order Chits', href: '/chits', icon: FileCheck },
     ],
   },
   {
@@ -41,14 +40,6 @@ const navItems = [
     adminOnly: false,
     items: [
       { name: 'Warehouse Map', href: '/inventory', icon: Warehouse },
-    ],
-  },
-  {
-    group: 'BILLING',
-    adminOnly: false,
-    items: [
-      { name: 'New Invoice', href: '/billing', icon: Receipt },
-      { name: 'Invoice History', href: '/invoices', icon: FileText },
     ],
   },
   {
@@ -86,7 +77,7 @@ export function Sidebar() {
   });
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-gray-900 text-white flex flex-col">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-gray-900 text-white flex flex-col print:hidden">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-700">
         <Package className="h-8 w-8 text-blue-400" />

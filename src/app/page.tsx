@@ -1,30 +1,26 @@
 import { getDashboardStats } from '@/lib/actions/admin-actions';
 import { StatCard } from '@/components/stat-card';
-import { CdrTrackerWidget } from '@/components/cdr-tracker-widget';
 import { formatCurrency } from '@/lib/utils';
 import {
   Package,
   Users,
   FileCheck,
-  Receipt,
   AlertTriangle,
-  Clock,
   DollarSign,
-  TrendingUp,
+  Send,
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function DashboardPage() {
   const stats = await getDashboardStats();
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Stationery Tender & Inventory Management Overview</p>
+        <h1 className="text-3xl font-bold text-gray-900">Accounts Receivable Dashboard</h1>
+        <p className="text-gray-500 mt-1">Order Chits & Outstanding Dues Management</p>
       </div>
 
-      {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Products"
@@ -39,112 +35,87 @@ export default async function DashboardPage() {
           iconColor="text-green-600 bg-green-100"
         />
         <StatCard
-          title="Active Contracts"
-          value={stats.contractCount}
+          title="Order Chits Scanned"
+          value={stats.chitCount}
           icon={FileCheck}
           iconColor="text-purple-600 bg-purple-100"
         />
         <StatCard
-          title="Total Revenue"
-          value={formatCurrency(stats.totalRevenue)}
+          title="Total Unpaid Dues"
+          value={formatCurrency(stats.totalOutstanding)}
           icon={DollarSign}
-          iconColor="text-emerald-600 bg-emerald-100"
+          iconColor="text-rose-600 bg-rose-100"
         />
       </div>
 
-      {/* Alert Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-amber-100">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Low Stock Alerts</h3>
-          </div>
-          <p className="text-4xl font-bold text-amber-600">{stats.lowStockCount}</p>
-          <p className="text-sm text-gray-500 mt-1">Items below minimum threshold</p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-orange-100">
-              <Clock className="h-5 w-5 text-orange-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Pending FBR Sync</h3>
-          </div>
-          <p className="text-4xl font-bold text-orange-600">{stats.pendingFbr}</p>
-          <p className="text-sm text-gray-500 mt-1">Invoices awaiting FBR submission</p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-blue-100">
-              <Receipt className="h-5 w-5 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900">Total Invoices</h3>
-          </div>
-          <p className="text-4xl font-bold text-blue-600">{stats.invoiceCount}</p>
-          <p className="text-sm text-gray-500 mt-1">All time invoices generated</p>
-        </div>
-      </div>
-
-      {/* Earnest Money (CDR) Tracker Section */}
-      <CdrTrackerWidget />
-
-      {/* Recent Invoices */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Invoices</h3>
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-rose-50/50">
+          <h3 className="text-lg font-bold text-rose-900">Aging Report: Unpaid Chits</h3>
+          <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
+            {stats.unpaidChits.length} Pending
+          </span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-6 py-3 font-medium text-gray-500">Invoice #</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-500">Client</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-500">Amount</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-500">FBR Status</th>
-                <th className="text-left px-6 py-3 font-medium text-gray-500">Status</th>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="text-left px-6 py-3 font-semibold text-gray-600">Client / Office</th>
+                <th className="text-left px-6 py-3 font-semibold text-gray-600">Chit #</th>
+                <th className="text-left px-6 py-3 font-semibold text-gray-600">Due Date</th>
+                <th className="text-right px-6 py-3 font-semibold text-gray-600">Total Amount</th>
+                <th className="text-right px-6 py-3 font-semibold text-gray-600">Balance Owed</th>
+                <th className="text-center px-6 py-3 font-semibold text-gray-600">Action</th>
               </tr>
             </thead>
-            <tbody>
-              {stats.recentInvoices.map((inv: any) => (
-                <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="px-6 py-4 font-mono text-sm">{inv.invoiceNumber}</td>
-                  <td className="px-6 py-4">{inv.client.name}</td>
-                  <td className="px-6 py-4 font-medium">{formatCurrency(inv.grandTotalPayable)}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        inv.fbrSyncStatus === 'SUCCESS'
-                          ? 'bg-green-100 text-green-800'
-                          : inv.fbrSyncStatus === 'FAILED'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {inv.fbrSyncStatus}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        inv.status === 'PAID'
-                          ? 'bg-green-100 text-green-800'
-                          : inv.status === 'ISSUED'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {stats.recentInvoices.length === 0 && (
+            <tbody className="divide-y divide-gray-100">
+              {stats.unpaidChits.map((chit: any) => {
+                const balance = chit.totalAmount - chit.paidAmount;
+                const isOverdue = chit.dueDate && new Date(chit.dueDate) < new Date();
+                
+                const whatsappMessage = encodeURIComponent(
+                  `*Payment Reminder*\n\nDear ${chit.client.contactPerson || chit.client.department || 'Sir/Madam'},\n\nThis is a gentle reminder regarding Chit #${chit.chitNumber} for ${chit.client.name}. The outstanding balance is Rs ${balance.toLocaleString()}.\n\nPlease arrange payment at your earliest convenience.\n\nThank you,\nBukhari Stationery`
+                );
+                
+                return (
+                  <tr key={chit.id} className="hover:bg-rose-50/30 transition">
+                    <td className="px-6 py-4">
+                      <p className="font-bold text-gray-900">{chit.client.name}</p>
+                      <p className="text-xs text-gray-500">{chit.client.department}</p>
+                    </td>
+                    <td className="px-6 py-4 font-mono font-medium text-blue-600">{chit.chitNumber}</td>
+                    <td className="px-6 py-4">
+                      {chit.dueDate ? (
+                        <span className={isOverdue ? "text-rose-600 font-bold" : "text-gray-600"}>
+                          {new Date(chit.dueDate).toLocaleDateString()}
+                          {isOverdue && " (Overdue)"}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">Not set</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-900">
+                      Rs {chit.totalAmount.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-right font-bold text-rose-600">
+                      Rs {balance.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <Link 
+                        href={`https://wa.me/${chit.client.phone?.replace(/[^0-9]/g, '') || ''}?text=${whatsappMessage}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-bold transition border border-green-200"
+                      >
+                        <Send className="h-3 w-3" />
+                        Send Alert
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+              {stats.unpaidChits.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
-                    No invoices yet. Create your first invoice from the Billing page.
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    No unpaid chits! All accounts are settled.
                   </td>
                 </tr>
               )}

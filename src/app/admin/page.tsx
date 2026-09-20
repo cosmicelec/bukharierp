@@ -1,18 +1,14 @@
-import { getTaxConfigurations } from '@/lib/actions/admin-actions';
 import { getAllLocations } from '@/lib/actions/inventory-actions';
 import { getAllClients } from '@/lib/actions/client-actions';
 import { getAllProducts } from '@/lib/actions/product-actions';
-import { getContracts } from '@/lib/actions/tender-actions';
 import { AdminPanel } from './admin-panel';
 import { Settings } from 'lucide-react';
 
 export default async function AdminPage() {
-  const [taxConfigs, locations, clients, products, contracts] = await Promise.all([
-    getTaxConfigurations(),
+  const [locations, clients, products] = await Promise.all([
     getAllLocations(),
     getAllClients(),
     getAllProducts(),
-    getContracts(),
   ]);
 
   return (
@@ -20,18 +16,16 @@ export default async function AdminPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
           <Settings className="h-8 w-8 text-gray-400" />
-          Dynamic Admin Panel
+          Admin Panel
         </h1>
         <p className="text-gray-500 mt-1">
-          Configure taxes, warehouse locations, clients, and products — no code changes required
+          Configure warehouse locations, clients, and products
         </p>
       </div>
       <AdminPanel
-        taxConfigs={taxConfigs}
         locations={locations}
         clients={clients}
         products={products}
-        contracts={contracts}
       />
     </div>
   );

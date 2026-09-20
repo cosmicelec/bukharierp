@@ -7,51 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model TaxConfiguration {
-  id              String   @id @default(uuid())
-  taxName         String   // e.g., 'STANDARD_GST', 'GOVT_WHT_GOODS'
-  taxRatePercent  Float    // e.g., 18.00 for GST, 5.00 for WHT
-  isActive        Boolean  @default(true)
-  effectiveFrom   DateTime
-  effectiveTo     DateTime?
-  description     String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@map("tax_configurations")
-}
-
 model Client {
   id                  String   @id @default(uuid())
-  code                String   @unique // e.g., 'CL-QTA-GPO-01'
-  name                String   // e.g., 'Quetta GPO (Pakistan Post)'
-  clientType          String   @default("GOVERNMENT") // GOVERNMENT, CORPORATE, WHOLESALE, WALK_IN
-  ntnNumber           String?  // Mandatory for FBR
-  strnNumber          String?  // Sales Tax Registration Number
-  isWithholdingAgent  Boolean  @default(true)
-  defaultWhtRate      Float    @default(5.00)
+  code                String   @unique
+  name                String
+  department          String?
+  contactPerson       String?
+  clientType          String   @default("GOVERNMENT")
   address             String
   city                String   @default("Quetta")
   phone               String?
+  totalOutstandingBalance Float @default(0)
   isActive            Boolean  @default(true)
   createdAt           DateTime @default(now())
 
-  tenderContracts     TenderContract[]
-  invoices            Invoice[]
+  chits               Chit[]
 
   @@map("clients")
 }
 
 model Product {
   id                    String   @id @default(uuid())
-  sku                   String   @unique // e.g., 'PAP-A4-80G-BLC'
-  name                  String   // e.g., 'A4 Photocopy Paper 80GSM'
-  brand                 String   // e.g., 'Double A'
-  hsCode                String   // FBR HS Code e.g., '4802.5600'
-  baseUom               String   // Primary UOM: 'Reams', 'Pieces', 'Boxes'
-  baseCost              Float    // Purchase cost before tax
-  standardRetailPrice   Float    // Walk-in customer price (excl. GST)
-  standardGstPercent    Float    @default(18.00)
+  sku                   String   @unique
+  name                  String
+  brand                 String
+  hsCode                String   
+  baseUom               String   
+  baseCost              Float    
+  standardRetailPrice   Float    
   minStockAlert         Int      @default(50)
   isActive              Boolean  @default(true)
   createdAt             DateTime @default(now())
@@ -59,8 +42,7 @@ model Product {
 
   uomConversions        ProductUomConversion[]
   inventoryStocks       InventoryStock[]
-  lockedTenderRates     LockedTenderRate[]
-  invoiceItems          InvoiceItem[]
+  chitItems             ChitItem[]
 
   @@map("products")
 }
@@ -68,8 +50,8 @@ model Product {
 model ProductUomConversion {
   id                String  @id @default(uuid())
   productId         String
-  alternateUom      String  // 'Carton', 'Dozen', 'Packet'
-  conversionFactor  Float   // e.g., 5.0 (1 Carton = 5 Reams)
+  alternateUom      String
+  conversionFactor  Float
   barcode           String?
 
   product           Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -79,17 +61,17 @@ model ProductUomConversion {
 
 model WarehouseLocation {
   id              String   @id @default(uuid())
-  warehouseName   String   // e.g., 'Main Godown (Zarghoon Rd)'
-  floorCode       String   // e.g., 'FL-G', 'FL-01'
-  floorName       String   // e.g., 'Ground Floor'
-  sectionAisle    String   // e.g., 'Aisle-03 (Paper Products)'
-  rackShelf       String   // e.g., 'Rack-B / Shelf-4'
-  locationCode    String   @unique // e.g., 'MG-FL0-AIS03-RKB-SH4'
+  warehouseName   String
+  floorCode       String
+  floorName       String
+  sectionAisle    String
+  rackShelf       String
+  locationCode    String   @unique
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
 
   inventoryStocks InventoryStock[]
-  invoiceItems    InvoiceItem[]
+  chitItems       ChitItem[]
 
   @@map("warehouse_locations")
 }
@@ -109,95 +91,53 @@ model InventoryStock {
   @@map("inventory_stocks")
 }
 
-model TenderContract {
-  id                 String   @id @default(uuid())
-  tenderReferenceNo  String   // e.g., 'TND-POST-2024-89B'
-  clientId           String
-  title              String   // e.g., 'Annual Stationery Framework 2024-25'
-  financialYear      String   // e.g., '2024-2025'
-  startDate          DateTime
-  endDate            DateTime
-  status             String   @default("DRAFT") // DRAFT, SUBMITTED, WON_LOCKED, EXPIRED, TERMINATED
-  contractFileUrl    String?
-  createdAt          DateTime @default(now())
+model Chit {
+  id              String   @id @default(uuid())
+  chitNumber      String   @unique
+  clientId        String
+  issuingOfficer  String
+  dateIssued      DateTime @default(now())
+  dueDate         DateTime?
+  totalAmount     Float    @default(0)
+  paidAmount      Float    @default(0)
+  status          String   @default("UNPAID") // UNPAID, PARTIALLY_PAID, PAID
+  imagePath       String?
+  rawOcrText      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  client             Client             @relation(fields: [clientId], references: [id])
-  lockedRates        LockedTenderRate[]
-  invoices           Invoice[]
+  client          Client      @relation(fields: [clientId], references: [id])
+  items           ChitItem[]
+  payments        Payment[]
 
-  @@map("tender_contracts")
+  @@map("chits")
 }
 
-model LockedTenderRate {
-  id                         String   @id @default(uuid())
-  contractId                 String
-  productId                  String
-  baseCostSnapshot           Float
-  freightHandlingPerUnit     Float    @default(0)
-  targetProfitMarginPercent  Float
-  gstPercentSnapshot         Float    @default(18.00)
-  sourceWhtPercentSnapshot   Float    @default(5.00)
-  lockedNetRate              Float    // Unit rate EXCLUDING GST
-  lockedGrossRate            Float    // Unit rate INCLUDING GST
-  committedQuantity          Float?
-  isActive                   Boolean  @default(true)
-  createdAt                  DateTime @default(now())
-
-  contract                   TenderContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  product                    Product        @relation(fields: [productId], references: [id])
-
-  @@unique([contractId, productId])
-  @@map("locked_tender_rates")
-}
-
-model Invoice {
-  id                     String   @id @default(uuid())
-  invoiceNumber          String   @unique // 'INV-2024-00941'
-  clientId               String
-  tenderContractId       String?
-  invoiceDate            DateTime @default(now())
-  dueDate                DateTime?
-
-  subtotalTaxableValue   Float    @default(0)
-  totalSalesTaxAmount    Float    @default(0)
-  totalWhtDeducted       Float    @default(0)
-  grandTotalPayable      Float    @default(0)
-
-  fbrInvoiceNumber       String?  // Returned by FBR API
-  fbrQrCodeData          String?  // Base64 or QR string from FBR
-  fbrSyncStatus          String   @default("PENDING") // PENDING, SUCCESS, FAILED, MANUAL_EXEMPT
-  fbrSyncResponse        String?  // JSON string
-  fbrSyncedAt            DateTime?
-
-  status                 String   @default("ISSUED") // DRAFT, ISSUED, PAID, CANCELLED
-  createdAt              DateTime @default(now())
-
-  client                 Client           @relation(fields: [clientId], references: [id])
-  tenderContract         TenderContract?  @relation(fields: [tenderContractId], references: [id])
-  items                  InvoiceItem[]
-
-  @@map("invoices")
-}
-
-model InvoiceItem {
+model ChitItem {
   id                  String  @id @default(uuid())
-  invoiceId           String
+  chitId              String
   productId           String
-  hsCode              String
-  uom                 String
   quantity            Float
-
-  rateTypeApplied     String  // 'LOCKED_TENDER', 'STANDARD_RETAIL', 'WHOLESALE'
-  unitPriceExclTax    Float
-  salesTaxPercent     Float
-  salesTaxAmount      Float
-  totalPriceInclTax   Float
-
+  unitPrice           Float
+  total               Float
   pickedLocationId    String
 
-  invoice             Invoice           @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  chit                Chit              @relation(fields: [chitId], references: [id], onDelete: Cascade)
   product             Product           @relation(fields: [productId], references: [id])
   pickedLocation      WarehouseLocation @relation(fields: [pickedLocationId], references: [id])
 
-  @@map("invoice_items")
+  @@map("chit_items")
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  chitId         String
+  paymentDate    DateTime @default(now())
+  amountPaid     Float
+  paymentMethod  String   // CASH, CHEQUE, BANK_TRANSFER
+  notes          String?
+
+  chit           Chit     @relation(fields: [chitId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
 }

@@ -31,7 +31,7 @@ export function middleware(request: NextRequest) {
   // Role-Based Access Control (RBAC)
   if (authSession) {
     const userRole = request.cookies.get('bukhari_user_role')?.value;
-    const adminOnlyPaths = ['/admin', '/contracts', '/tender-calculator'];
+    const adminOnlyPaths = ['/admin'];
     
     const isTryingToAccessAdminRoute = adminOnlyPaths.some(p => pathname.startsWith(p));
     

@@ -15,8 +15,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Sidebar />
-      <main className="ml-64 min-h-screen">
-        <div className="p-6 lg:p-8">{children}</div>
+      <main className="ml-64 min-h-screen print:ml-0">
+        <div className="p-6 lg:p-8 print:p-0">{children}</div>
       </main>
       <BukhariAgentSidebar />
     </>

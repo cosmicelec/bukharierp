@@ -13,7 +13,7 @@ export async function getClients() {
 export async function getAllClients() {
   return prisma.client.findMany({
     include: {
-      tenderContracts: true,
+      chits: true,
     },
     orderBy: { name: 'asc' },
   });
@@ -23,8 +23,7 @@ export async function getClientById(id: string) {
   return prisma.client.findUnique({
     where: { id },
     include: {
-      tenderContracts: { include: { lockedRates: { include: { product: true } } } },
-      invoices: { take: 10, orderBy: { createdAt: 'desc' } },
+      chits: { take: 10, orderBy: { createdAt: 'desc' } },
     },
   });
 }
@@ -33,10 +32,8 @@ export async function createClient(data: {
   code: string;
   name: string;
   clientType: string;
-  ntnNumber?: string;
-  strnNumber?: string;
-  isWithholdingAgent?: boolean;
-  defaultWhtRate?: number;
+  department?: string;
+  contactPerson?: string;
   address: string;
   city?: string;
   phone?: string;
@@ -46,17 +43,14 @@ export async function createClient(data: {
       code: data.code,
       name: data.name,
       clientType: data.clientType,
-      ntnNumber: data.ntnNumber || null,
-      strnNumber: data.strnNumber || null,
-      isWithholdingAgent: data.isWithholdingAgent ?? true,
-      defaultWhtRate: data.defaultWhtRate ?? 5.0,
+      department: data.department || null,
+      contactPerson: data.contactPerson || null,
       address: data.address,
       city: data.city ?? 'Quetta',
       phone: data.phone || null,
     },
   });
   revalidatePath('/admin');
-  revalidatePath('/billing');
   return client;
 }
 
@@ -65,10 +59,8 @@ export async function updateClient(
   data: {
     name?: string;
     clientType?: string;
-    ntnNumber?: string;
-    strnNumber?: string;
-    isWithholdingAgent?: boolean;
-    defaultWhtRate?: number;
+    department?: string;
+    contactPerson?: string;
     address?: string;
     city?: string;
     phone?: string;
